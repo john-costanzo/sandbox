@@ -1,2 +1,4 @@
 # sandbox
-This is a sandbox repo, useful for experiementing with Github features, etc.
+This is a sandbox repo, useful for experimenting with Github features, etc.
+
+Here is a new line!

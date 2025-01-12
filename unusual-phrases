@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+
+from collections import Counter
+import math
+from nltk import ngrams
+from nltk.corpus import stopwords
+import string
+
+corpus_words = []
+corpus_ngrams = []
+
+def initialize_unusual_phrases( corpus, n ):
+    corpus_words = [preprocess(doc) for doc in corpus]
+    corpus_ngrams = [list(ngrams(doc, n)) for doc in corpus_words]
+
+def get_unusual_phrases(document, corpus_len, n=2, threshold=2):
+    doc_words = preprocess(document)
+
+    # Generate n-grams
+    doc_ngrams = list(ngrams(doc_words, n))
+
+    # Calculate document frequency
+    df = Counter()
+    for doc in corpus_ngrams:
+        df.update(set(doc))
+
+    # Calculate TF-IDF for document n-grams
+    doc_tfidf = {}
+    doc_freq = Counter(doc_ngrams)
+    num_docs = corpus_len
+
+    for gram, freq in doc_freq.items():
+        tf = freq / len(doc_ngrams)
+        idf = math.log(num_docs / (df[gram] + 1))
+        doc_tfidf[gram] = tf * idf
+
+    # Find unusual phrases
+    unusual_phrases = [' '.join(gram) for gram, score in doc_tfidf.items()
+                       if score > threshold]
+
+    return unusual_phrases
+
+def preprocess(text):
+    stop_words = set(stopwords.words('english'))
+    # Remove punctuation and convert to lowercase
+    text = text.translate(str.maketrans('', '', string.punctuation)).lower()
+    # Remove stopwords
+    words = [word for word in text.split() if word not in stop_words]
+    return words
+
+# Example usage
+document = '''
+This is a sample document with some unusual phrases. Unusual phrases are important.
+'''
+
+corpus = [
+    "This is a normal document.",
+    "Nothing unusual here.",
+    "Just some regular text.",
+    "No unusual phrases in this one."
+]
+
+ngram_length=2
+threshold=0.25
+initialize_unusual_phrases( corpus, ngram_length )
+unusual_phrases = get_unusual_phrases(document, len(corpus) + 1, ngram_length, threshold)
+print("Unusual phrases:", unusual_phrases)
